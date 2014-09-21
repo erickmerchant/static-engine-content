@@ -1,0 +1,21 @@
+{
+  "name": "static-engine-content",
+  "version": "1.0.0",
+  "description": "Middleware for static-engine.",
+  "main": "index.js",
+  "repository": "erickmerchant/static-engine-content",
+  "author": "Erick Merchant <erickmerchant@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/erickmerchant/static-engine-content/issues"
+  },
+  "homepage": "https://github.com/erickmerchant/static-engine-content",
+  "dependencies": {
+    "glob": "^4.0.4",
+    "js-yaml": "^3.1.0",
+    "lodash": "^2.4.1",
+    "moment": "^2.7.0",
+    "q": "^1.0.1",
+    "trimmer": "^1.0.0"
+  }
+}
