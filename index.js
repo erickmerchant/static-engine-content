@@ -1,4 +1,3 @@
-var _ = require('lodash');
 var moment = require('moment');
 var yaml = require('js-yaml');
 var glob = require('glob');
@@ -7,6 +6,7 @@ var fs = require('fs');
 var trim = require('trimmer');
 var Q = require('q');
 var delim = "---\n";
+var assign = require('object-assign');
 
 var plugin = function (content) {
 
@@ -20,7 +20,7 @@ var plugin = function (content) {
 
         glob(glob_directory, {}, function (err, files) {
 
-            _.each(files.reverse(), function (file, current) {
+            files.reverse().forEach(function (file, current) {
 
                 var ext = path.extname(file);
 
@@ -36,7 +36,7 @@ var plugin = function (content) {
 
                 read_promises[current] = read_deferred.promise;
 
-                if (_.has(plugin.config.converters, conv)) {
+                if (plugin.config.converters.hasOwnProperty(conv)) {
 
                     parts = path.basename(file, ext).split('.');
 
@@ -65,7 +65,7 @@ var plugin = function (content) {
 
                         data = data.split(delim);
 
-                        page = _.assign(page, yaml.load(data[1]));
+                        page = assign(page, yaml.load(data[1]));
 
                         plugin.config.converters[conv](data.slice(2)
                             .join(delim), function (err, content) {
