@@ -55,9 +55,7 @@ var plugin = function (content) {
                         page.date = moment();
                     }
 
-                    fs.readFile(file, {
-                        encoding: 'utf-8'
-                    }, function (err, data) {
+                    fs.readFile(file, { encoding: 'utf-8' }, function (err, data) {
 
                         if (err) throw err;
 
@@ -67,8 +65,7 @@ var plugin = function (content) {
 
                         page = assign(page, yaml.load(data[1]));
 
-                        plugin.config.converters[conv](data.slice(2)
-                            .join(delim), function (err, content) {
+                        plugin.config.converters[conv](data.slice(2).join(delim), function (err, content) {
 
                                 page.content = content;
 
