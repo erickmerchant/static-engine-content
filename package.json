@@ -1,7 +1,7 @@
 {
   "name": "static-engine-content",
   "version": "1.1.0",
-  "description": "Middleware for static-engine.",
+  "description": "Plugin for static-engine.",
   "main": "index.js",
   "repository": "erickmerchant/static-engine-content",
   "keywords": [
@@ -20,5 +20,8 @@
     "object-assign": "^1.0.0",
     "q": "^1.0.1",
     "trimmer": "^1.0.0"
+  },
+  "peerDependencies": {
+    "static-engine": "^2.0.0"
   }
 }
