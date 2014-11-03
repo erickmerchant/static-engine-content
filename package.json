@@ -5,7 +5,7 @@
   "main": "index.js",
   "repository": "erickmerchant/static-engine-content",
   "keywords": [
-      "static-engine"
+    "static-engine"
   ],
   "author": "Erick Merchant <erickmerchant@gmail.com>",
   "license": "MIT",
@@ -27,6 +27,7 @@
   "devDependencies": {
     "chai": "^1.9.2",
     "mocha": "^2.0.0",
-    "mock-fs": "^2.3.2"
+    "mock-fs": "^2.3.2",
+    "rewire": "^2.1.2"
   }
 }

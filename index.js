@@ -7,6 +7,7 @@ var trim = require('trimmer');
 var Q = require('q');
 var delim = "---\n";
 var assign = require('object-assign');
+var date_formats = ["YYYY-MM-DD", "YYYY-MM-DD-HHmmss"];
 
 var plugin = function (content) {
 
@@ -20,62 +21,79 @@ var plugin = function (content) {
 
         glob(glob_directory, {}, function (err, files) {
 
-            files.reverse().forEach(function (file, current) {
-
-                var ext = path.extname(file);
-
-                var conv = trim.left(ext, '.');
-
-                var parts;
+            files.forEach(function (file, current) {
 
                 var read_deferred = Q.defer();
 
-                var page = {};
-
-                page.slug = path.basename(file, ext);
-
                 read_promises[current] = read_deferred.promise;
 
-                if (plugin.config.converters.hasOwnProperty(conv)) {
+                fs.stat(file, function(err, stats){
 
-                    parts = path.basename(file, ext).split('.');
+                    if(stats.isFile()) {
 
-                    if (parts.length >= 2) {
+                        var ext = path.extname(file);
 
-                        page.date = moment(parts[0], plugin.config.date_formats);
+                        var parts;
 
-                        if (page.date && page.date.isValid()) {
+                        var page = {};
 
-                            page.slug = parts.slice(1).join('.');
+                        var category = path.dirname(file);
+
+                        page.slug = path.basename(file, ext);
+
+                        page.category = category.substr(plugin.content_directory.length);
+
+                        if (plugin.converter) {
+
+                            parts = path.basename(file, ext).split('.');
+
+                            if (parts.length >= 2) {
+
+                                page.date = moment(parts[0], date_formats);
+
+                                if (page.date && page.date.isValid()) {
+
+                                    page.slug = parts.slice(1).join('.');
+                                }
+                            }
+
+                            if (!(page.date && page.date.isValid())) {
+
+                                page.date = moment();
+                            }
+
+                            fs.readFile(file, { encoding: 'utf-8' }, function (err, data) {
+
+                                if (err) throw err;
+
+                                data += "\n";
+
+                                data = data.split(delim);
+
+                                if(data.length > 1) {
+
+                                    page = assign(page, yaml.load(data[1]));
+
+                                    data = data.slice(2);
+                                }
+
+                                plugin.converter(data.join(delim), function (err, content) {
+
+                                    page.content = content;
+
+                                    pages.push(page);
+
+                                    read_deferred.resolve();
+                                });
+
+                            });
                         }
                     }
+                    else {
 
-                    if (!(page.date && page.date.isValid())) {
-
-                        page.date = moment();
+                        read_deferred.resolve();
                     }
-
-                    fs.readFile(file, { encoding: 'utf-8' }, function (err, data) {
-
-                        if (err) throw err;
-
-                        data = data + "\n";
-
-                        data = data.split(delim);
-
-                        page = assign(page, yaml.load(data[1]));
-
-                        plugin.config.converters[conv](data.slice(2).join(delim), function (err, content) {
-
-                                page.content = content;
-
-                                pages[current] = page;
-
-                                read_deferred.resolve();
-                            });
-
-                    });
-                }
+                });
 
             });
 
@@ -87,17 +105,43 @@ var plugin = function (content) {
 
             Q.all(read_promises).then(function () {
 
+                pages.sort(function(a, b) {
+
+                    if(!a.date && !b.date) return 0;
+
+                    if(!a.date) return -1;
+
+                    if(!b.date || a.date < b.date) {
+
+                        return 1;
+                    }
+
+                    if(a.date > b.date) {
+
+                        return -1;
+                    }
+
+                    return 0;
+                });
+
                 next(pages);
             });
         });
     };
 };
 
-plugin.configure = function (content_directory, config) {
+plugin.content_directory = './content/';
+
+plugin.converter = function (content, cb) {
+
+    return cb(null, content);
+};
+
+plugin.configure = function (content_directory, converter) {
 
     plugin.content_directory = content_directory;
 
-    plugin.config = config;
+    plugin.converter = converter;
 };
 
 module.exports = plugin;
