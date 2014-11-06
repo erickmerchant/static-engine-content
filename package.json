@@ -15,11 +15,8 @@
   "homepage": "https://github.com/erickmerchant/static-engine-content",
   "dependencies": {
     "glob": "^4.0.4",
-    "js-yaml": "^3.1.0",
     "moment": "^2.7.0",
-    "object-assign": "^1.0.0",
-    "q": "^1.0.1",
-    "trimmer": "^1.0.0"
+    "q": "^1.0.1"
   },
   "peerDependencies": {
     "static-engine": "^2.0.0"

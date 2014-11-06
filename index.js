@@ -1,23 +1,48 @@
 var moment = require('moment');
-var yaml = require('js-yaml');
 var glob = require('glob');
 var path = require('path');
 var fs = require('fs');
-var trim = require('trimmer');
 var Q = require('q');
-var delim = "---\n";
-var assign = require('object-assign');
-var date_formats = ["YYYY-MM-DD", "YYYY-MM-DD-HHmmss"];
+
+function run_converters(file, page, converters) {
+
+    var i = -1;
+
+    var run_deferred = Q.defer();
+
+    function next(file, page) {
+
+        if (++i < converters.length) {
+
+            converters[i](file, page, next);
+
+            return;
+        }
+
+        run_deferred.resolve(page);
+    };
+
+    next(file, page);
+
+    return run_deferred.promise;
+};
 
 var plugin = function (content) {
 
     return function (pages, next) {
 
+        if(!content) {
+
+            next(pages);
+
+            return;
+        }
+
         var read_promises = [];
 
         var glob_deferred = Q.defer();
 
-        var glob_directory = plugin.content_directory + content;
+        var glob_directory = plugin.directory + content;
 
         glob(glob_directory, {}, function (err, files) {
 
@@ -31,63 +56,24 @@ var plugin = function (content) {
 
                     if(stats.isFile()) {
 
-                        var ext = path.extname(file);
-
-                        var parts;
-
                         var page = {};
 
-                        var category = path.dirname(file);
+                        fs.readFile(file, { encoding: 'utf-8' }, function (err, data) {
 
-                        page.slug = path.basename(file, ext);
+                            if (err) throw err;
 
-                        page.category = category.substr(plugin.content_directory.length);
+                            page.content = data;
 
-                        if (plugin.converter) {
+                            file = file.substr(plugin.directory.length);
 
-                            parts = path.basename(file, ext).split('.');
+                            run_converters(file, page, plugin.converters).then(function(page){
 
-                            if (parts.length >= 2) {
+                                pages.push(page);
 
-                                page.date = moment(parts[0], date_formats);
-
-                                if (page.date && page.date.isValid()) {
-
-                                    page.slug = parts.slice(1).join('.');
-                                }
-                            }
-
-                            if (!(page.date && page.date.isValid())) {
-
-                                page.date = moment();
-                            }
-
-                            fs.readFile(file, { encoding: 'utf-8' }, function (err, data) {
-
-                                if (err) throw err;
-
-                                data += "\n";
-
-                                data = data.split(delim);
-
-                                if(data.length > 1) {
-
-                                    page = assign(page, yaml.load(data[1]));
-
-                                    data = data.slice(2);
-                                }
-
-                                plugin.converter(data.join(delim), function (err, content) {
-
-                                    page.content = content;
-
-                                    pages.push(page);
-
-                                    read_deferred.resolve();
-                                });
-
+                                read_deferred.resolve();
                             });
-                        }
+
+                        });
                     }
                     else {
 
@@ -105,23 +91,15 @@ var plugin = function (content) {
 
             Q.all(read_promises).then(function () {
 
+                var now = moment();
+
                 pages.sort(function(a, b) {
 
-                    if(!a.date && !b.date) return 0;
+                    a = a.date || now;
 
-                    if(!a.date) return -1;
+                    b = b.date || now;
 
-                    if(!b.date || a.date < b.date) {
-
-                        return 1;
-                    }
-
-                    if(a.date > b.date) {
-
-                        return -1;
-                    }
-
-                    return 0;
+                    return b.diff(a);
                 });
 
                 next(pages);
@@ -130,18 +108,15 @@ var plugin = function (content) {
     };
 };
 
-plugin.content_directory = './content/';
+plugin.directory = './';
 
-plugin.converter = function (content, cb) {
+plugin.converters = [];
 
-    return cb(null, content);
-};
+plugin.configure = function(directory, converters) {
 
-plugin.configure = function (content_directory, converter) {
+    plugin.directory = directory;
 
-    plugin.content_directory = content_directory;
-
-    plugin.converter = converter;
+    plugin.converters = converters;
 };
 
 module.exports = plugin;
