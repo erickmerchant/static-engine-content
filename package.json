@@ -19,7 +19,7 @@
     "moment": "^2.7.0"
   },
   "peerDependencies": {
-    "static-engine": "^2.0.0"
+    "static-engine": "^3.0.0"
   },
   "devDependencies": {
     "chai": "^1.9.2",
