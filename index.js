@@ -2,29 +2,28 @@ var moment = require('moment');
 var glob = require('glob');
 var path = require('path');
 var fs = require('fs');
-var Q = require('q');
+var Promise = require('es6-promise').Promise;
 
 function run_converters(file, page, converters) {
 
     var i = -1;
 
-    var run_deferred = Q.defer();
+    return new Promise(function(resolve, reject){
 
-    function next(file, page) {
+        function next(file, page) {
 
-        if (++i < converters.length) {
+            if (++i < converters.length) {
 
-            converters[i](file, page, next);
+                converters[i](file, page, next);
 
-            return;
-        }
+                return;
+            }
 
-        run_deferred.resolve(page);
-    };
+            resolve(page);
+        };
 
-    next(file, page);
-
-    return run_deferred.promise;
+        next(file, page);
+    });
 };
 
 var plugin = function (content) {
@@ -40,56 +39,54 @@ var plugin = function (content) {
 
         var read_promises = [];
 
-        var glob_deferred = Q.defer();
+        new Promise(function(resolve, reject){
 
-        var glob_directory = plugin.directory + content;
+            var glob_directory = plugin.directory + content;
 
-        glob(glob_directory, {}, function (err, files) {
+            glob(glob_directory, {}, function (err, files) {
 
-            files.forEach(function (file, current) {
+                read_promises = files.map(function (file, current) {
 
-                var read_deferred = Q.defer();
+                    return new Promise(function(resolve, reject){
 
-                read_promises[current] = read_deferred.promise;
+                        fs.stat(file, function(err, stats){
 
-                fs.stat(file, function(err, stats){
+                            if(stats.isFile()) {
 
-                    if(stats.isFile()) {
+                                var page = {};
 
-                        var page = {};
+                                fs.readFile(file, { encoding: 'utf-8' }, function (err, data) {
 
-                        fs.readFile(file, { encoding: 'utf-8' }, function (err, data) {
+                                    if (err) throw err;
 
-                            if (err) throw err;
+                                    page.content = data;
 
-                            page.content = data;
+                                    file = file.substr(plugin.directory.length);
 
-                            file = file.substr(plugin.directory.length);
+                                    run_converters(file, page, plugin.converters).then(function(page){
 
-                            run_converters(file, page, plugin.converters).then(function(page){
+                                        pages.push(page);
 
-                                pages.push(page);
+                                        resolve();
+                                    });
 
-                                read_deferred.resolve();
-                            });
+                                });
+                            }
+                            else {
 
+                                resolve();
+                            }
                         });
-                    }
-                    else {
-
-                        read_deferred.resolve();
-                    }
+                    });
                 });
 
+                resolve();
+
             });
+        })
+        .then(function () {
 
-            glob_deferred.resolve();
-
-        });
-
-        Q.when(glob_deferred.promise).then(function () {
-
-            Q.all(read_promises).then(function () {
+            Promise.all(read_promises).then(function () {
 
                 var now = moment();
 

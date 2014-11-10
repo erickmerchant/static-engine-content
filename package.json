@@ -14,9 +14,9 @@
   },
   "homepage": "https://github.com/erickmerchant/static-engine-content",
   "dependencies": {
+    "es6-promise": "^2.0.0",
     "glob": "^4.0.4",
-    "moment": "^2.7.0",
-    "q": "^1.0.1"
+    "moment": "^2.7.0"
   },
   "peerDependencies": {
     "static-engine": "^2.0.0"

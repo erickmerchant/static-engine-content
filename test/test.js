@@ -1,7 +1,6 @@
 var mock = require('mock-fs');
 var moment = require('moment');
 var assert = require('chai').assert;
-var Q = require('q');
 var rewire = require('rewire');
 
 describe('plugin', function(){
