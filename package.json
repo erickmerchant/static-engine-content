@@ -1,6 +1,6 @@
 {
   "name": "static-engine-content",
-  "version": "2.1.0",
+  "version": "2.1.1",
   "description": "Plugin for static-engine.",
   "main": "index.js",
   "repository": "erickmerchant/static-engine-content",
