@@ -26,7 +26,37 @@ function run_converters(file, page, converters) {
     });
 };
 
-var plugin = function (content) {
+function read_file(file, pages) {
+
+    return new Promise(function(resolve, reject){
+
+        fs.stat(file, function(err, stats){
+
+            if(stats.isFile()) {
+
+                var page = {};
+
+                fs.readFile(file, { encoding: 'utf-8' }, function (err, data) {
+
+                    if (err) throw err;
+
+                    page.content = data;
+
+                    file = file.substr(plugin.directory.length);
+
+                    resolve(page);
+
+                });
+            }
+            else {
+
+                resolve({});
+            }
+        });
+    });
+}
+
+function plugin(content) {
 
     return function (pages, next) {
 
@@ -45,37 +75,15 @@ var plugin = function (content) {
 
             glob(glob_directory, {}, function (err, files) {
 
-                read_promises = files.map(function (file, current) {
+                read_promises = files.map(function (file) {
 
-                    return new Promise(function(resolve, reject){
+                    return read_file(file, pages).then(function(page){
 
-                        fs.stat(file, function(err, stats){
+                        return run_converters(file, page, plugin.converters).then(function(page){
 
-                            if(stats.isFile()) {
+                            pages.push(page);
 
-                                var page = {};
-
-                                fs.readFile(file, { encoding: 'utf-8' }, function (err, data) {
-
-                                    if (err) throw err;
-
-                                    page.content = data;
-
-                                    file = file.substr(plugin.directory.length);
-
-                                    run_converters(file, page, plugin.converters).then(function(page){
-
-                                        pages.push(page);
-
-                                        resolve();
-                                    });
-
-                                });
-                            }
-                            else {
-
-                                resolve();
-                            }
+                            resolve();
                         });
                     });
                 });
