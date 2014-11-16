@@ -67,32 +67,22 @@ function plugin(content) {
             return;
         }
 
-        var read_promises = [];
+        var glob_directory = plugin.directory + content;
 
-        new Promise(function(resolve, reject){
+        glob(glob_directory, {}, function (err, files) {
 
-            var glob_directory = plugin.directory + content;
+            var read_promises = files.map(function (file) {
 
-            glob(glob_directory, {}, function (err, files) {
+                return read_file(file, pages)
+                    .then(function(page){
 
-                read_promises = files.map(function (file) {
+                        return run_converters(file, page, plugin.converters);
+                    })
+                    .then(function(page){
 
-                    return read_file(file, pages).then(function(page){
-
-                        return run_converters(file, page, plugin.converters).then(function(page){
-
-                            pages.push(page);
-
-                            resolve();
-                        });
+                        pages.push(page);
                     });
-                });
-
-                resolve();
-
             });
-        })
-        .then(function () {
 
             Promise.all(read_promises).then(function () {
 
