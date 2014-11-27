@@ -20,11 +20,11 @@ function run_converters(file, page, converters) {
             }
 
             resolve(page);
-        };
+        }
 
         next(file, page);
     });
-};
+}
 
 function read_file(file, pages) {
 
@@ -101,7 +101,7 @@ function plugin(content) {
             });
         });
     };
-};
+}
 
 plugin.directory = './';
 
