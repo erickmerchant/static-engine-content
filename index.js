@@ -1,32 +1,31 @@
-var moment = require('moment');
 var glob = require('glob');
 var path = require('path');
 var fs = require('fs');
 var Promise = require('es6-promise').Promise;
 
-function run_converters(file, page, converters) {
+function run_converters(page, converters) {
 
     var i = -1;
 
     return new Promise(function(resolve, reject){
 
-        function next(file, page) {
+        var next = function(page) {
 
             if (++i < converters.length) {
 
-                converters[i](file, page, next);
+                converters[i](page).then(next);
 
                 return;
             }
 
             resolve(page);
-        }
+        };
 
-        next(file, page);
+        next(page);
     });
 }
 
-function read_file(file, pages) {
+function read_file(file) {
 
     return new Promise(function(resolve, reject){
 
@@ -58,46 +57,36 @@ function read_file(file, pages) {
 
 function plugin(content) {
 
-    return function (pages, next) {
+    return function (pages) {
 
         if(!content) {
 
-            next(pages);
-
-            return;
+            return Promise.resolve(pages);
         }
 
         var glob_directory = plugin.directory + content;
 
-        glob(glob_directory, {}, function (err, files) {
+        return new Promise(function(resolve, reject){
 
-            var read_promises = files.map(function (file) {
+            glob(glob_directory, {}, function (err, files) {
 
-                return read_file(file, pages)
-                    .then(function(page){
+                var read_promises = files.map(function (file) {
 
-                        return run_converters(file, page, plugin.converters);
-                    })
-                    .then(function(page){
+                    return read_file(file)
+                        .then(function(page){
 
-                        pages.push(page);
-                    });
-            });
+                            page.file = file;
 
-            Promise.all(read_promises).then(function () {
-
-                var now = moment();
-
-                pages.sort(function(a, b) {
-
-                    a = a.date || now;
-
-                    b = b.date || now;
-
-                    return b.diff(a);
+                            return run_converters(page, plugin.converters);
+                        });
                 });
 
-                next(pages);
+                Promise.all(read_promises).then(function (new_pages) {
+
+                    Array.prototype.push.apply(pages, new_pages)
+
+                    resolve(pages);
+                });
             });
         });
     };

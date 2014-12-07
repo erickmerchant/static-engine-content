@@ -1,7 +1,7 @@
 var mock = require('mock-fs');
-var moment = require('moment');
 var assert = require('chai').assert;
 var rewire = require('rewire');
+var Promise = require('es6-promise').Promise;
 
 describe('plugin', function(){
 
@@ -23,18 +23,18 @@ describe('plugin', function(){
         content.__set__('fs', mocked_fs);
 
         var directory = './test/content/';
-        var converters = [function(file, page, next){
+        var converters = [function(page){
 
-            next(file, page);
+            return Promise.resolve(page);
         }];
 
         content.configure(directory, converters);
 
         var plugin = content('*');
 
-        plugin([{content: 'test 1'}], function(pages, next){
+        plugin([{content: 'test 1'}]).then(function(pages){
 
-            assert.deepEqual(pages, [{content: 'test 1'}, {content: 'test 2'}]);
+            assert.deepEqual(pages, [{content: 'test 1'}, {content: 'test 2', file: './test/content/test.txt'}]);
 
             done();
         });
@@ -59,23 +59,23 @@ describe('plugin', function(){
 
         var directory = './test/content/';
         var converters = [
-            function(file, page, next){
+            function(page){
 
                 page.content += ' 1';
 
-                next(file, page);
+                return Promise.resolve(page);
             },
-            function(file, page, next){
+            function(page){
 
                 page.content += ' 2';
 
-                next(file, page);
+                return Promise.resolve(page);
             },
-            function(file, page, next){
+            function(page){
 
                 page.content += ' 3';
 
-                next(file, page);
+                return Promise.resolve(page);
             },
         ];
 
@@ -83,54 +83,9 @@ describe('plugin', function(){
 
         var plugin = content('*');
 
-        plugin([], function(pages, next){
+        plugin([]).then(function(pages){
 
-            assert.deepEqual(pages, [{content: 'test 1 2 3'}]);
-
-            done();
-        });
-    });
-
-    it('it should sort results by date descending', function(done){
-
-        var content = rewire('../index.js');
-        var glob = rewire('glob');
-
-        var mocked_fs = mock.fs({
-            './test/content/': {
-                'test-1.txt': '2015-01-01',
-                'test-2.txt': '2015-01-02',
-                'test-3.txt': '2015-01-03',
-            }
-        });
-
-        glob.__set__('fs', mocked_fs);
-
-        content.__set__('glob', glob);
-
-        content.__set__('fs', mocked_fs);
-
-        var directory = './test/content/';
-        var converters = [
-            function(file, page, next){
-
-                page.date = moment(page.content, 'YYYY-MM-DD');
-
-                next(file, page);
-            }
-        ];
-
-        content.configure(directory, converters);
-
-        var plugin = content('*');
-
-        plugin([], function(pages, next){
-
-            assert.deepEqual(pages, [
-                {content: '2015-01-03', date: moment('2015-01-03', 'YYYY-MM-DD')},
-                {content: '2015-01-02', date: moment('2015-01-02', 'YYYY-MM-DD')},
-                {content: '2015-01-01', date: moment('2015-01-01', 'YYYY-MM-DD')}
-            ]);
+            assert.deepEqual(pages, [{content: 'test 1 2 3',file: './test/content/test.txt'}]);
 
             done();
         });
@@ -140,20 +95,7 @@ describe('plugin', function(){
 
         it('if it\'s not called the content directory and the converter should be the defaults', function(done){
 
-            var content = rewire('../index.js');
-            var glob = rewire('glob');
-
-            var mocked_fs = mock.fs({
-                './test/content/': {
-
-                }
-            });
-
-            glob.__set__('fs', mocked_fs);
-
-            content.__set__('glob', glob);
-
-            content.__set__('fs', mocked_fs);
+            var content = require('../index.js');
 
             assert.deepEqual(content.directory, './');
 
@@ -164,25 +106,12 @@ describe('plugin', function(){
 
         it('should set the content directory and the converter', function(done){
 
-            var content = rewire('../index.js');
-            var glob = rewire('glob');
-
-            var mocked_fs = mock.fs({
-                './test/content/': {
-
-                }
-            });
-
-            glob.__set__('fs', mocked_fs);
-
-            content.__set__('glob', glob);
-
-            content.__set__('fs', mocked_fs);
+            var content = require('../index.js');
 
             var directory = './test/content/';
-            var converters = [function(file, page, next){
+            var converters = [function(page){
 
-                next(file, page);
+                return Promise.resolve(page);
             }];
 
             content.configure(directory, converters);
