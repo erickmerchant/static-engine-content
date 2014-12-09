@@ -2,28 +2,7 @@ var glob = require('glob');
 var path = require('path');
 var fs = require('fs');
 var Promise = require('es6-promise').Promise;
-
-function run_converters(page, converters) {
-
-    var i = -1;
-
-    return new Promise(function(resolve, reject){
-
-        var next = function(page) {
-
-            if (++i < converters.length) {
-
-                converters[i](page).then(next);
-
-                return;
-            }
-
-            resolve(page);
-        };
-
-        next(page);
-    });
-}
+var compose = require('static-engine/compose');
 
 function read_file(file) {
 
@@ -77,7 +56,7 @@ function plugin(content) {
 
                             page.file = file;
 
-                            return run_converters(page, plugin.converters);
+                            return compose(plugin.converters)(page);
                         });
                 });
 
