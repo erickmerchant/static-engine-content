@@ -62,7 +62,7 @@ function plugin(content) {
 
                 Promise.all(read_promises).then(function (new_pages) {
 
-                    Array.prototype.push.apply(pages, new_pages)
+                    Array.prototype.push.apply(pages, new_pages);
 
                     resolve(pages);
                 });
