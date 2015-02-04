@@ -10,25 +10,37 @@ function read_file(file) {
 
         fs.stat(file, function(err, stats){
 
-            if(stats.isFile()) {
+            if (err) {
 
-                var page = {};
-
-                fs.readFile(file, { encoding: 'utf-8' }, function (err, data) {
-
-                    if (err) throw err;
-
-                    page.content = data;
-
-                    file = file.substr(plugin.directory.length);
-
-                    resolve(page);
-
-                });
+                reject(err);
             }
             else {
 
-                resolve({});
+                if(stats.isFile()) {
+
+                    var page = {};
+
+                    fs.readFile(file, { encoding: 'utf-8' }, function (err, data) {
+
+                        if (err) {
+
+                            reject(err);
+                        }
+                        else {
+
+                            page.content = data;
+
+                            file = file.substr(plugin.directory.length);
+
+                            resolve(page);
+                        }
+
+                    });
+                }
+                else {
+
+                    resolve({});
+                }
             }
         });
     });
@@ -49,23 +61,30 @@ function plugin(content) {
 
             glob(glob_directory, {}, function (err, files) {
 
-                var read_promises = files.map(function (file) {
+                if(err) {
 
-                    return read_file(file)
-                        .then(function(page){
+                    reject(err);
+                }
+                else {
 
-                            page.file = file;
+                    var read_promises = files.map(function (file) {
 
-                            return compose(plugin.converters)(page);
-                        });
-                });
+                        return read_file(file)
+                            .then(function(page){
 
-                Promise.all(read_promises).then(function (new_pages) {
+                                page.file = file;
 
-                    Array.prototype.push.apply(pages, new_pages);
+                                return compose(plugin.converters)(page);
+                            });
+                    });
 
-                    resolve(pages);
-                });
+                    Promise.all(read_promises).then(function (new_pages) {
+
+                        Array.prototype.push.apply(pages, new_pages);
+
+                        resolve(pages);
+                    });
+                }
             });
         });
     };
