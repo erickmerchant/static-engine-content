@@ -1,7 +1,6 @@
 var glob = require('glob');
 var path = require('path');
 var fs = require('fs');
-var Promise = require('es6-promise').Promise;
 var compose = require('static-compose');
 
 function read_file(file) {
