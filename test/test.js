@@ -21,15 +21,12 @@ describe('plugin', function(){
 
         content.__set__('fs', mocked_fs);
 
-        var directory = './test/content/';
         var converters = [function(page){
 
             return Promise.resolve(page);
         }];
 
-        content.configure(directory, converters);
-
-        var plugin = content('*');
+        var plugin = content('./test/content/*', converters);
 
         plugin([{content: 'test 1'}]).then(function(pages){
 
@@ -56,7 +53,6 @@ describe('plugin', function(){
 
         content.__set__('fs', mocked_fs);
 
-        var directory = './test/content/';
         var converters = [
             function(page){
 
@@ -78,45 +74,11 @@ describe('plugin', function(){
             },
         ];
 
-        content.configure(directory, converters);
-
-        var plugin = content('*');
+        var plugin = content('./test/content/*', converters);
 
         plugin([]).then(function(pages){
 
             assert.deepEqual(pages, [{content: 'test 1 2 3',file: './test/content/test.txt'}]);
-
-            done();
-        });
-    });
-
-    describe('.configure', function(){
-
-        it('if it\'s not called the content directory and the converter should be the defaults', function(done){
-
-            var content = require('../index.js');
-
-            assert.deepEqual(content.directory, './');
-
-            assert.deepEqual(content.converters, []);
-
-            done();
-        });
-
-        it('should set the content directory and the converter', function(done){
-
-            var content = require('../index.js');
-
-            var directory = './test/content/';
-            var converters = [function(page){
-
-                return Promise.resolve(page);
-            }];
-
-            content.configure(directory, converters);
-
-            assert.equal(content.directory, directory);
-            assert.equal(content.converters, converters);
 
             done();
         });

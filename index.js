@@ -43,7 +43,7 @@ function read_file(file) {
     });
 }
 
-function plugin(content) {
+module.exports = function(content, converters) {
 
     return function (pages) {
 
@@ -52,11 +52,9 @@ function plugin(content) {
             return Promise.resolve(pages);
         }
 
-        var glob_directory = plugin.directory + content;
-
         return new Promise(function(resolve, reject){
 
-            glob(glob_directory, {}, function (err, files) {
+            glob(content, {}, function (err, files) {
 
                 if(err) {
 
@@ -71,7 +69,7 @@ function plugin(content) {
 
                                 page.file = file;
 
-                                return compose(plugin.converters)(page);
+                                return compose(converters)(page);
                             });
                     });
 
@@ -90,17 +88,4 @@ function plugin(content) {
             });
         });
     };
-}
-
-plugin.directory = './';
-
-plugin.converters = [];
-
-plugin.configure = function(directory, converters) {
-
-    plugin.directory = directory;
-
-    plugin.converters = converters;
 };
-
-module.exports = plugin;
