@@ -29,8 +29,6 @@ function read_file(file) {
 
                             page.content = data;
 
-                            file = file.substr(plugin.directory.length);
-
                             resolve(page);
                         }
 
