@@ -14,7 +14,7 @@
   },
   "homepage": "https://github.com/erickmerchant/static-engine-content",
   "dependencies": {
-    "glob": "^4.0.4",
+    "glob": "^5.0.0",
     "static-compose": "^3.0.0"
   },
   "devDependencies": {
