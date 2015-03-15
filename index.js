@@ -1,21 +1,62 @@
 var glob = require('glob');
 var path = require('path');
 var fs = require('fs');
-var engine = require('static-engine');
 
-function read_file(file) {
+module.exports = function(content) {
 
-    return new Promise(function(resolve, reject){
+    return function (pages) {
 
-        fs.stat(file, function(err, stats){
+        if(!content) {
 
-            if (err) {
+            return Promise.resolve(pages);
+        }
 
-                reject(err);
-            }
-            else {
+        return (new Promise(function(resolve, reject){
 
-                if(stats.isFile()) {
+            glob(content, {}, function (err, files) {
+
+                if(err) {
+
+                    reject(err);
+                }
+                else {
+
+                    resolve(files);
+                }
+            });
+        }))
+        .then(function(files){
+
+            return Promise.all(files.map(function (file) {
+
+                return new Promise(function(resolve, reject){
+
+                    fs.stat(file, function(err, stats){
+
+                        if (err) {
+
+                            reject(err);
+                        }
+                        else {
+
+                            if(stats.isFile()) {
+
+                                resolve(file);
+                            }
+                            else {
+
+                                reject(new Error(file + ' is not a file'));
+                            }
+                        }
+                    });
+                });
+            }));
+        })
+        .then(function(files){
+
+            return Promise.all(files.map(function(file){
+
+                return new Promise(function(resolve, reject){
 
                     var page = {};
 
@@ -27,75 +68,22 @@ function read_file(file) {
                         }
                         else {
 
+                            page.file = file;
+
                             page.content = data;
 
                             resolve(page);
                         }
 
                     });
-                }
-                else {
+                });
+            }));
+        })
+        .then(function (new_pages) {
 
-                    resolve({});
-                }
-            }
-        });
-    });
-}
-
-module.exports = function(content, converters) {
-
-    return function (pages) {
-
-        if(!content) {
+            [].push.apply(pages, new_pages);
 
             return Promise.resolve(pages);
-        }
-
-        return new Promise(function(resolve, reject){
-
-            glob(content, {}, function (err, files) {
-
-                if(err) {
-
-                    reject(err);
-                }
-                else {
-
-                    var read_promises = files.map(function (file) {
-
-                        return read_file(file)
-                            .then(function(page){
-
-                                var converters_plus = converters.slice(0);
-
-                                page.file = file;
-
-                                converters_plus.unshift(function(pages, done) {
-
-                                    done(null, page);
-                                });
-
-                                return engine(converters_plus).then(function(new_pages){
-
-                                    return Promise.resolve(new_pages[0]);
-                                });
-                            });
-                    });
-
-                    Promise.all(read_promises)
-                        .then(function (new_pages) {
-
-                            Array.prototype.push.apply(pages, new_pages);
-
-                            resolve(pages);
-                        })
-                        .catch(function(err){
-
-                            reject(err);
-                        });
-                }
-            });
         });
     };
 };
