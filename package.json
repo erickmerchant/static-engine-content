@@ -15,7 +15,7 @@
   "homepage": "https://github.com/erickmerchant/static-engine-content",
   "dependencies": {
     "glob": "^5.0.0",
-    "static-compose": "^3.0.0"
+    "static-engine": "^9.0.1"
   },
   "devDependencies": {
     "chai": "^2.0.0",

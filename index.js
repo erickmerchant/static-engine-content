@@ -1,7 +1,7 @@
 var glob = require('glob');
 var path = require('path');
 var fs = require('fs');
-var compose = require('static-compose');
+var engine = require('static-engine');
 
 function read_file(file) {
 
@@ -67,16 +67,23 @@ module.exports = function(content, converters) {
                         return read_file(file)
                             .then(function(page){
 
+                                var converters_plus = converters.slice(0);
+
+                                converters_plus.unshift(function(pages, done) {
+
+                                    done(null, page);
+                                });
+
                                 page.file = file;
 
-                                return compose(converters)(page);
+                                return engine(converters_plus);
                             });
                     });
 
                     Promise.all(read_promises)
                         .then(function (new_pages) {
 
-                            Array.prototype.push.apply(pages, new_pages);
+                            Array.prototype.push.apply(pages, new_pages[0]);
 
                             resolve(pages);
                         })
