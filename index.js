@@ -69,21 +69,24 @@ module.exports = function(content, converters) {
 
                                 var converters_plus = converters.slice(0);
 
+                                page.file = file;
+
                                 converters_plus.unshift(function(pages, done) {
 
                                     done(null, page);
                                 });
 
-                                page.file = file;
+                                return engine(converters_plus).then(function(new_pages){
 
-                                return engine(converters_plus);
+                                    return Promise.resolve(new_pages[0]);
+                                });
                             });
                     });
 
                     Promise.all(read_promises)
                         .then(function (new_pages) {
 
-                            Array.prototype.push.apply(pages, new_pages[0]);
+                            Array.prototype.push.apply(pages, new_pages);
 
                             resolve(pages);
                         })
