@@ -79,9 +79,9 @@ module.exports = function(content) {
                 });
             }));
         })
-        .then(function (new_pages) {
+        .then(function (newPages) {
 
-            [].push.apply(pages, new_pages);
+            [].push.apply(pages, newPages);
 
             return Promise.resolve(pages);
         });

@@ -9,17 +9,17 @@ describe('plugin', function(){
         var content = rewire('../index.js');
         var glob = rewire('glob');
 
-        var mocked_fs = mock.fs({
+        var mockedFS = mock.fs({
             './test/content/': {
                 'test.txt': 'test 2'
             }
         });
 
-        glob.__set__('fs', mocked_fs);
+        glob.__set__('fs', mockedFS);
 
         content.__set__('glob', glob);
 
-        content.__set__('fs', mocked_fs);
+        content.__set__('fs', mockedFS);
 
         var plugin = content('./test/content/*');
 
