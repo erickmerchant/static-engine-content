@@ -27,33 +27,6 @@ module.exports = function(content) {
         }))
         .then(function(files){
 
-            return Promise.all(files.map(function (file) {
-
-                return new Promise(function(resolve, reject){
-
-                    fs.stat(file, function(err, stats){
-
-                        if (err) {
-
-                            reject(err);
-                        }
-                        else {
-
-                            if(stats.isFile()) {
-
-                                resolve(file);
-                            }
-                            else {
-
-                                reject(new Error(file + ' is not a file'));
-                            }
-                        }
-                    });
-                });
-            }));
-        })
-        .then(function(files){
-
             return Promise.all(files.map(function(file){
 
                 return new Promise(function(resolve, reject){
