@@ -4,59 +4,48 @@ var fs = require('fs');
 
 module.exports = function(content) {
 
-    return function (pages) {
+    return function (pages, done) {
 
-        if(!content) {
+        glob(content, {}, function (err, files) {
 
-            return Promise.resolve(pages);
-        }
+            if(err) {
 
-        return (new Promise(function(resolve, reject){
+                done(err);
+            }
+            else {
 
-            glob(content, {}, function (err, files) {
+                files = files.map(function(file){
 
-                if(err) {
+                    return new Promise(function(resolve, reject){
 
-                    reject(err);
-                }
-                else {
+                        var page = {};
 
-                    resolve(files);
-                }
-            });
-        }))
-        .then(function(files){
+                        fs.readFile(file, { encoding: 'utf-8' }, function (err, data) {
 
-            return Promise.all(files.map(function(file){
+                            if (err) {
 
-                return new Promise(function(resolve, reject){
+                                reject(err);
+                            }
+                            else {
 
-                    var page = {};
+                                page.file = file;
 
-                    fs.readFile(file, { encoding: 'utf-8' }, function (err, data) {
+                                page.content = data;
 
-                        if (err) {
+                                resolve(page);
+                            }
 
-                            reject(err);
-                        }
-                        else {
-
-                            page.file = file;
-
-                            page.content = data;
-
-                            resolve(page);
-                        }
-
+                        });
                     });
                 });
-            }));
-        })
-        .then(function (newPages) {
 
-            [].push.apply(pages, newPages);
+                Promise.all(files).then(function (newPages) {
 
-            return Promise.resolve(pages);
+                    [].push.apply(pages, newPages);
+
+                    done(null, pages);
+                });
+            }
         });
     };
 };

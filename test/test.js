@@ -1,35 +1,27 @@
-var mock = require('mock-fs');
 var assert = require('assert');
-var rewire = require('rewire');
+var content = require('./rewired')({
+    './test/content/': {
+        'test.txt': 'test 2'
+    }
+});
+var plugin = content('./test/content/*');
 
 describe('plugin', function(){
 
     it('it should append to existing pages', function(done){
 
-        var content = rewire('../index.js');
-        var glob = rewire('glob');
+        plugin([{content: 'test 1'}], function(err, pages){
 
-        var mockedFS = mock.fs({
-            './test/content/': {
-                'test.txt': 'test 2'
+            if(err) {
+
+                done(err);
+            }
+            else {
+
+                assert.deepEqual(pages, [{content: 'test 1'}, {content: 'test 2', file: './test/content/test.txt'}]);
+
+                done();
             }
         });
-
-        glob.__set__('fs', mockedFS);
-
-        content.__set__('glob', glob);
-
-        content.__set__('fs', mockedFS);
-
-        var plugin = content('./test/content/*');
-
-        plugin([{content: 'test 1'}])
-        .then(function(pages){
-
-            assert.deepEqual(pages, [{content: 'test 1'}, {content: 'test 2', file: './test/content/test.txt'}]);
-
-            done();
-        })
-        .catch(done);
     });
 });
