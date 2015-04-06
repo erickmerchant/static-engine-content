@@ -1,6 +1,6 @@
 {
   "name": "static-engine-content",
-  "version": "7.0.0",
+  "version": "7.0.1",
   "description": "Plugin for static-engine. Provided a glob it searches for files and adds an object to the collection for each file found.",
   "main": "index.js",
   "repository": "erickmerchant/static-engine-content",
