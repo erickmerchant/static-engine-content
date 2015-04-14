@@ -18,7 +18,6 @@
   },
   "devDependencies": {
     "mocha": "^2.0.0",
-    "mock-fs": "^2.3.2",
     "rewire": "^2.1.2",
     "standard": "^3.5.0"
   },
