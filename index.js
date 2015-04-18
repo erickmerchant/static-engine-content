@@ -30,6 +30,9 @@ module.exports = function (content) {
 
           done(null, pages)
         })
+        .catch(function (err) {
+          done(err)
+        })
       }
     })
   }
