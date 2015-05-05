@@ -3,16 +3,16 @@
   "version": "1.0.0",
   "description": "Plugin for static-engine. Provided a glob it searches for files and adds an object to the collection for each file found.",
   "main": "index.js",
-  "repository": "erickmerchant/static-engine-content",
+  "repository": "erickmerchant/static-engine-read",
   "keywords": [
     "static-engine"
   ],
   "author": "Erick Merchant <erickmerchant@gmail.com>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/erickmerchant/static-engine-content/issues"
+    "url": "https://github.com/erickmerchant/static-engine-read/issues"
   },
-  "homepage": "https://github.com/erickmerchant/static-engine-content",
+  "homepage": "https://github.com/erickmerchant/static-engine-read",
   "dependencies": {
     "glob": "^5.0.0"
   },
