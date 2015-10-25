@@ -1,50 +1,46 @@
-var describe = require('mocha').describe
-var it = require('mocha').it
-var assert = require('assert')
+var tap = require('tap')
 
-describe('plugin', function () {
-  it('it should append to existing pages', function (done) {
-    var plugin = mock({
-      './test/content/test.txt': 'test 2'
-    })
-    var content = plugin('./test/content/*')
-
-    content([{content: 'test 1'}], function (err, pages) {
-      assert.equal(null, err)
-      assert.deepEqual(pages, [{content: 'test 1'}, {content: 'test 2', file: './test/content/test.txt'}])
-
-      done()
-    })
+tap.test('it should append to existing pages', function (t) {
+  var plugin = mock({
+    './test/content/test.txt': 'test 2'
   })
+  var content = plugin('./test/content/*')
 
-  it('it should handle glob errors', function (done) {
-    var plugin = mock({
-      './test/content/test.txt': 'test 2'
-    }, {
-      glob: new Error('glob error!')
-    })
-    var content = plugin('./test/content/*')
+  content([{content: 'test 1'}], function (err, pages) {
+    t.equal(null, err)
+    t.deepEqual(pages, [{content: 'test 1'}, {content: 'test 2', file: './test/content/test.txt'}])
 
-    content([{content: 'test 1'}], function (err) {
-      assert.equal(err.message, 'glob error!')
-
-      done()
-    })
+    t.end()
   })
+})
 
-  it('it should handle fs.readFile errors', function (done) {
-    var plugin = mock({
-      './test/content/test.txt': 'test 2'
-    }, {
-      fs: new Error('fs.readFile error!')
-    })
-    var content = plugin('./test/content/*')
+tap.test('it should handle glob errors', function (t) {
+  var plugin = mock({
+    './test/content/test.txt': 'test 2'
+  }, {
+    glob: new Error('glob error!')
+  })
+  var content = plugin('./test/content/*')
 
-    content([{content: 'test 1'}], function (err) {
-      assert.equal(err.message, 'fs.readFile error!')
+  content([{content: 'test 1'}], function (err) {
+    t.equal(err.message, 'glob error!')
 
-      done()
-    })
+    t.end()
+  })
+})
+
+tap.test('it should handle fs.readFile errors', function (t) {
+  var plugin = mock({
+    './test/content/test.txt': 'test 2'
+  }, {
+    fs: new Error('fs.readFile error!')
+  })
+  var content = plugin('./test/content/*')
+
+  content([{content: 'test 1'}], function (err) {
+    t.equal(err.message, 'fs.readFile error!')
+
+    t.end()
   })
 })
 
