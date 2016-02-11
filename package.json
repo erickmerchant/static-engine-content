@@ -14,7 +14,7 @@
   },
   "homepage": "https://github.com/erickmerchant/static-engine-read",
   "dependencies": {
-    "glob": "^6.0.1"
+    "glob": "^7.0.0"
   },
   "devDependencies": {
     "rewire": "^2.1.2",
