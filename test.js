@@ -1,6 +1,6 @@
-var tap = require('tap')
+var test = require('tape')
 
-tap.test('it should append to existing pages', function (t) {
+test('it should append to existing pages', function (t) {
   var plugin = mock({
     './test/content/test.txt': 'test 2'
   })
@@ -14,7 +14,7 @@ tap.test('it should append to existing pages', function (t) {
   })
 })
 
-tap.test('it should handle glob errors', function (t) {
+test('it should handle glob errors', function (t) {
   var plugin = mock({
     './test/content/test.txt': 'test 2'
   }, {
@@ -29,7 +29,7 @@ tap.test('it should handle glob errors', function (t) {
   })
 })
 
-tap.test('it should handle fs.readFile errors', function (t) {
+test('it should handle fs.readFile errors', function (t) {
   var plugin = mock({
     './test/content/test.txt': 'test 2'
   }, {
